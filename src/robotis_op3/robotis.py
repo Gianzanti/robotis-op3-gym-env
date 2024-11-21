@@ -34,19 +34,19 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
         self,         
         frame_skip: int = 5,
         default_camera_config: Dict[str, Union[float, int]] = DEFAULT_CAMERA_CONFIG,
-        forward_reward_weight: float = 1.25,
+        forward_reward_weight: float = 2.50,
         ctrl_cost_weight: float = 0.1,
-        ctrl_cost_diff_axis_y: float = 0.2,
-        contact_cost_weight: float = 5e-7,
-        contact_cost_range: Tuple[float, float] = (-np.inf, 10.0),
+        ctrl_cost_diff_axis_y: float = 0.1,
+        # contact_cost_weight: float = 5e-7,
+        # contact_cost_range: Tuple[float, float] = (-np.inf, 10.0),
         healthy_reward: float = 5.0,
         terminate_when_unhealthy: bool = True,
         healthy_z_range: Tuple[float, float] = (0.22, 0.35),
         reset_noise_scale: float = 1e-2,
         # exclude_current_positions_from_observation: bool = True,
-        # include_cinert_in_observation: bool = True,
-        # include_cvel_in_observation: bool = True,
-        # include_qfrc_actuator_in_observation: bool = True,
+        include_cinert_in_observation: bool = False,
+        include_cvel_in_observation: bool = False,
+        include_qfrc_actuator_in_observation: bool = False,
         # include_cfrc_ext_in_observation: bool = True, 
         **kwargs):
 
@@ -57,8 +57,8 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
             forward_reward_weight,
             ctrl_cost_weight,
             ctrl_cost_diff_axis_y,
-            contact_cost_weight,
-            contact_cost_range,
+            # contact_cost_weight,
+            # contact_cost_range,
             healthy_reward,
             terminate_when_unhealthy,
             healthy_z_range,
@@ -92,9 +92,11 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
         }
 
         obs_size = self.data.qpos.size + self.data.qvel.size + self.data.sensordata.size
-        obs_size += self.data.cinert[1:].size
-        obs_size += self.data.cvel[1:].size
-        obs_size += (self.data.qvel.size - 6)
+        obs_size += self.data.cinert[1:].size * include_cinert_in_observation
+        obs_size += self.data.cvel[1:].size * include_cvel_in_observation
+        obs_size += (self.data.qvel.size - 6) * include_qfrc_actuator_in_observation
+        # obs_size += self.data.cfrc_ext[1:].size * include_cfrc_ext_in_observation
+
 
         self.observation_space = Box(
             low=-np.inf, high=np.inf, shape=(obs_size,), dtype=np.float64

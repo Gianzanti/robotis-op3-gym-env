@@ -97,7 +97,6 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
         obs_size += (self.data.qvel.size - 6) * include_qfrc_actuator_in_observation
         # obs_size += self.data.cfrc_ext[1:].size * include_cfrc_ext_in_observation
 
-
         self.observation_space = Box(
             low=-np.inf, high=np.inf, shape=(obs_size,), dtype=np.float64
         )
@@ -211,6 +210,24 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
         com_inertia = self.data.cinert[1:].flatten()
         com_velocity = self.data.cvel[1:].flatten()
         actuator_forces = self.data.qfrc_actuator[6:].flatten()
+
+
+
+        if self._include_cinert_in_observation is True:
+            com_inertia = self.data.cinert[1:].flatten()
+        else:
+            com_inertia = np.array([])
+        
+        if self._include_cvel_in_observation is True:
+            com_velocity = self.data.cvel[1:].flatten()
+        else:
+            com_velocity = np.array([])
+
+        if self._include_qfrc_actuator_in_observation is True:
+            actuator_forces = self.data.qfrc_actuator[6:].flatten()
+        else:
+            actuator_forces = np.array([])
+        
 
         return np.concatenate(
             (

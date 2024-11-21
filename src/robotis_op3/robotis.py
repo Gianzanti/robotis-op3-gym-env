@@ -63,6 +63,9 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
             terminate_when_unhealthy,
             healthy_z_range,
             reset_noise_scale,
+            include_cinert_in_observation,
+            include_cvel_in_observation,
+            include_qfrc_actuator_in_observation,
             **kwargs
         )
         self._forward_reward_weight: float = forward_reward_weight
@@ -72,6 +75,10 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
         self._terminate_when_unhealthy: bool = terminate_when_unhealthy
         self._healthy_z_range: Tuple[float, float] = healthy_z_range
         self._reset_noise_scale: float = reset_noise_scale
+
+        self._include_cinert_in_observation = include_cinert_in_observation
+        self._include_cvel_in_observation = include_cvel_in_observation
+        self._include_qfrc_actuator_in_observation = include_qfrc_actuator_in_observation
 
         MujocoEnv.__init__(
             self,

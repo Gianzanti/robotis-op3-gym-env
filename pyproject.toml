@@ -1,6 +1,6 @@
 [project]
 name = "robotis-op3"
-version = "0.2.0"
+version = "0.2.1"
 description = "A custom gymnasium environment, using the ROBOTIS-OP3 MJCF model."
 readme = "README.md"
 authors = [

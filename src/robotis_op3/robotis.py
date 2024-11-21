@@ -1,5 +1,5 @@
 import os
-from typing import Tuple
+from typing import Dict, Tuple, Union
 
 import numpy as np
 from gymnasium import utils
@@ -30,19 +30,48 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
     }
 
     # set default episode_len for truncate episodes
-    def __init__(self, **kwargs):
-        utils.EzPickle.__init__(self, **kwargs)
+    def __init__(
+        self,         
+        frame_skip: int = 5,
+        default_camera_config: Dict[str, Union[float, int]] = DEFAULT_CAMERA_CONFIG,
+        forward_reward_weight: float = 1.25,
+        ctrl_cost_weight: float = 0.1,
+        ctrl_cost_diff_axis_y: float = 0.2,
+        contact_cost_weight: float = 5e-7,
+        contact_cost_range: Tuple[float, float] = (-np.inf, 10.0),
+        healthy_reward: float = 5.0,
+        terminate_when_unhealthy: bool = True,
+        healthy_z_range: Tuple[float, float] = (0.22, 0.35),
+        reset_noise_scale: float = 1e-2,
+        # exclude_current_positions_from_observation: bool = True,
+        # include_cinert_in_observation: bool = True,
+        # include_cvel_in_observation: bool = True,
+        # include_qfrc_actuator_in_observation: bool = True,
+        # include_cfrc_ext_in_observation: bool = True, 
+        **kwargs):
 
-        frame_skip = 5
-
-        self._forward_reward_weight: float = 5.00
-        self._ctrl_cost_weight: float = 0.1
-        self._ctrl_cost_diff_axis_y: float = 0.2
-        self._healthy_reward: float = 2.0
-        self._terminate_when_unhealthy: bool = True
-        self._healthy_z_range: Tuple[float, float] = (0.24, 0.30)
-        self._reset_noise_scale: float = 1e-2
-
+        utils.EzPickle.__init__(
+            self, 
+            frame_skip,
+            default_camera_config,
+            forward_reward_weight,
+            ctrl_cost_weight,
+            ctrl_cost_diff_axis_y,
+            contact_cost_weight,
+            contact_cost_range,
+            healthy_reward,
+            terminate_when_unhealthy,
+            healthy_z_range,
+            reset_noise_scale,
+            **kwargs
+        )
+        self._forward_reward_weight: float = forward_reward_weight
+        self._ctrl_cost_weight: float = ctrl_cost_weight
+        self._ctrl_cost_diff_axis_y: float = ctrl_cost_diff_axis_y
+        self._healthy_reward: float = healthy_reward
+        self._terminate_when_unhealthy: bool = terminate_when_unhealthy
+        self._healthy_z_range: Tuple[float, float] = healthy_z_range
+        self._reset_noise_scale: float = reset_noise_scale
 
         MujocoEnv.__init__(
             self,
@@ -93,6 +122,7 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
             "x_velocity": x_velocity,
             "y_velocity": y_velocity,
             "z_height": self.data.site('torso').xpos[2],
+            # "z_height": self.data.qpos[2],
             "x_pos_delta": x_pos_delta,
             **reward_info,
         }
@@ -128,8 +158,9 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
 
 
     def _get_rew(self, x_velocity: float, x_pos:float, action):
-        penalty_stagnation = (x_pos < 0.01) * 0.1
-        forward_reward = (self._forward_reward_weight * x_pos) - penalty_stagnation
+        # penalty_stagnation = (x_pos < 0.01) * 0.1
+        # forward_reward = (self._forward_reward_weight * x_pos) - penalty_stagnation
+        forward_reward = (self._forward_reward_weight * x_pos)
         healthy_reward = self.healthy_reward
         rewards = forward_reward + healthy_reward
 
@@ -154,10 +185,10 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
     def reset_model(self):
         # self.step_number = 0
 
-        # noise_low = -self._reset_noise_scale
-        # noise_high = self._reset_noise_scale
-        noise_low = -0.01
-        noise_high = 0.01
+        noise_low = -self._reset_noise_scale
+        noise_high = self._reset_noise_scale
+        # noise_low = -0.01
+        # noise_high = 0.01
 
         qpos = self.init_qpos + self.np_random.uniform(
             low=noise_low, high=noise_high, size=self.model.nq

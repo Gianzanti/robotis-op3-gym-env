@@ -1,0 +1,22 @@
+[project]
+name = "robotis-op3"
+version = "0.1.1"
+description = "A custom gymnasium environment, using the ROBOTIS-OP3 MJCF model."
+readme = "README.md"
+authors = [
+    { name = "Fabio Gianzanti", email = "grfabio@gmail.com" }
+]
+requires-python = ">=3.10"
+dependencies = [
+    "gymnasium>=1.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "imageio>=2.36.0",
+    "mujoco>=3.2.5",
+]

@@ -157,13 +157,13 @@
         <body name="l_hip_roll_link" pos="-0.024 0 -0.0285">
           <inertial pos="0.00388 0.00028 -0.01214" quat="0.502657 0.490852 0.498494 0.507842" mass="0.17886"
             diaginertia="0.000125243 0.000108598 4.65693e-05"/>
-          <joint name="l_hip_roll" axis="-1 0 0" limited="true" range="-0.2 0.2"/>
+          <joint name="l_hip_roll" axis="-1 0 0" limited="true" range="-0.3 0.3"/>
           <geom mesh="ll2" class="visual"/>
           <geom mesh="ll2c" class="collision"/>
           <body name="l_hip_pitch_link" pos="0.0241 0.019 0" >
             <inertial pos="0.00059 -0.01901 -0.08408" quat="0.999682 0.0246915 0.00447825 -0.002482" mass="0.11543"
               diaginertia="0.000104996 9.63044e-05 2.47492e-05"/>
-            <joint name="l_hip_pitch" axis="0 1 0"/> <!-- ref="0.3"/> -->
+            <joint name="l_hip_pitch" axis="0 1 0" limited="true" range="-1.57 1.0"/>
             <geom mesh="ll3" class="visual"/>
             <geom mesh="ll3c" class="collision"/>
             <body name="l_knee_link" pos="0 0 -0.11015">
@@ -200,13 +200,13 @@
         <body name="r_hip_roll_link" pos="-0.024 0 -0.0285">
           <inertial pos="0.00388 -0.00028 -0.01214" quat="0.507842 0.498494 0.490852 0.502657" mass="0.17886"
             diaginertia="0.000125243 0.000108598 4.65693e-05"/>
-          <joint name="r_hip_roll" axis="-1 0 0" limited="true" range="-0.2 0.2"/>
+          <joint name="r_hip_roll" axis="-1 0 0" limited="true" range="-0.3 0.3"/>
           <geom mesh="rl2" class="visual"/>
           <geom mesh="rl2c" class="collision"/>
           <body name="r_hip_pitch_link" pos="0.0241 -0.019 0">
             <inertial pos="0.00059 0.01901 -0.08408" quat="0.999682 -0.0246915 0.00447825 0.002482" mass="0.11543"
               diaginertia="0.000104996 9.63044e-05 2.47492e-05"/>
-            <joint name="r_hip_pitch" axis="0 -1 0" ref="-0.3"/>
+            <joint name="r_hip_pitch" axis="0 -1 0" limited="true" range="-1.0 1.57"/>
             <geom mesh="rl3" class="visual"/>
             <geom mesh="rl3c" class="collision"/>
             <body name="r_knee_link" pos="0 0 -0.11015">

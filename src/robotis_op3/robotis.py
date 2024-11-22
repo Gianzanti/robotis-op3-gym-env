@@ -35,13 +35,13 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
         frame_skip: int = 5,
         default_camera_config: Dict[str, Union[float, int]] = DEFAULT_CAMERA_CONFIG,
         forward_reward_weight: float = 5.00,
-        ctrl_cost_weight: float = 0.05,
+        ctrl_cost_weight: float = 0.001,
         ctrl_cost_diff_axis_y: float = 0.1,
         # contact_cost_weight: float = 5e-7,
         # contact_cost_range: Tuple[float, float] = (-np.inf, 10.0),
-        healthy_reward: float = 3.0,
+        healthy_reward: float = 2.0,
         terminate_when_unhealthy: bool = True,
-        healthy_z_range: Tuple[float, float] = (0.25, 0.32),
+        healthy_z_range: Tuple[float, float] = (0.26, 0.32),
         reset_noise_scale: float = 1e-2,
         # exclude_current_positions_from_observation: bool = True,
         include_cinert_in_observation: bool = False,
@@ -145,6 +145,7 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
     @property
     def is_healthy(self):
         min_z, max_z = self._healthy_z_range
+        # print(self.data.site('torso').xpos[2])
         is_healthy = min_z < self.data.site('torso').xpos[2] < max_z
         return is_healthy
 

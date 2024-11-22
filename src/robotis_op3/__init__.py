@@ -12,7 +12,7 @@ if env_id is None:
     # Register this module as a gym environment. Once registered, the id is usable in gym.make().
     register(
         id=env,
-        entry_point="robotis_env.robotis_env:RobotisEnv",
+        entry_point="robotis_op3.robotis:RobotisEnv",
     )
     print(f"Registered environment {env}")
 else:

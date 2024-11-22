@@ -34,14 +34,14 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
         self,         
         frame_skip: int = 5,
         default_camera_config: Dict[str, Union[float, int]] = DEFAULT_CAMERA_CONFIG,
-        forward_reward_weight: float = 2.50,
-        ctrl_cost_weight: float = 0.1,
+        forward_reward_weight: float = 5.00,
+        ctrl_cost_weight: float = 0.05,
         ctrl_cost_diff_axis_y: float = 0.1,
         # contact_cost_weight: float = 5e-7,
         # contact_cost_range: Tuple[float, float] = (-np.inf, 10.0),
-        healthy_reward: float = 5.0,
+        healthy_reward: float = 3.0,
         terminate_when_unhealthy: bool = True,
-        healthy_z_range: Tuple[float, float] = (0.22, 0.35),
+        healthy_z_range: Tuple[float, float] = (0.25, 0.32),
         reset_noise_scale: float = 1e-2,
         # exclude_current_positions_from_observation: bool = True,
         include_cinert_in_observation: bool = False,
@@ -121,7 +121,8 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
         x_pos_delta = xy_position_after[0] - xy_position_before[0]
 
         observation = self._get_obs()
-        reward, reward_info = self._get_rew(x_velocity, x_pos_delta, action)
+        # reward, reward_info = self._get_rew(x_velocity, x_pos_delta, action)
+        reward, reward_info = self._get_rew(x_velocity, self.data.qpos[0], action)
         terminated = (not self.is_healthy) # and self._terminate_when_unhealthy
         info = {
             "x_position": self.data.qpos[0],

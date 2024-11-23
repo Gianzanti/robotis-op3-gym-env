@@ -60,8 +60,9 @@
     <geom type="mesh" solref=".004 1"/>
     <joint damping="1.084" armature="0.045" frictionloss="0.03"/>
     <site group="5" type="sphere"/>
-    <!-- <position kp="21.1" ctrlrange="-3.141592 3.141592" forcerange="-5 5"/> -->
-    <motor gear="1" ctrllimited="true" ctrlrange="-5 5" />
+    <position kp="21.1" ctrlrange="-3.141592 3.141592" forcerange="-5 5"/>
+    <!-- <velocity kv="200"/> -->
+    <!-- <motor gear="1" ctrllimited="true" ctrlrange="-5 5" /> -->
     <default class="collision">
       <geom group="3"/>
       <default class="foot">
@@ -174,7 +175,7 @@
               <body name="l_ank_pitch_link" pos="0 0 -0.11">
                 <inertial pos="-0.02022 -0.01872 0.01214" quat="0.490852 0.502657 0.507842 0.498494" mass="0.17886"
                   diaginertia="0.000125243 0.000108598 4.65693e-05"/>
-                <joint name="l_ank_pitch" axis="0 -1 0" ref="1.5"/>
+                <joint name="l_ank_pitch" axis="0 -1 0"/>
                 <geom mesh="ll5" class="visual"/>
                 <geom mesh="ll5c" class="collision"/>
                 <body name="l_ank_roll_link" pos="-0.0241 -0.019 0">
@@ -211,13 +212,13 @@
             <geom mesh="rl3c" class="collision"/>
             <body name="r_knee_link" pos="0 0 -0.11015">
               <inertial pos="0 0.02151 -0.055" mass="0.04015" diaginertia="3.715e-05 2.751e-05 1.511e-05"/>
-              <joint name="r_knee" axis="0 -1 0" limited="true" range="-1.57 0.08" /> <!--ref="0.3"/> -->
+              <joint name="r_knee" axis="0 -1 0" limited="true" range="-1.57 0.08" /> 
               <geom mesh="rl4" class="visual"/>
               <geom mesh="rl4c" class="collision"/>
               <body name="r_ank_pitch_link" pos="0 0 -0.11">
                 <inertial pos="-0.02022 0.01872 0.01214" quat="0.498494 0.507842 0.502657 0.490852" mass="0.17886"
                   diaginertia="0.000125243 0.000108598 4.65693e-05"/>
-                <joint name="r_ank_pitch" axis="0 1 0" /> <!--ref="0.3"/> -->
+                <joint name="r_ank_pitch" axis="0 1 0" />
                 <geom mesh="rl5" class="visual"/>
                 <geom mesh="rl5c" class="collision"/>
                 <body name="r_ank_roll_link" pos="-0.0241 0.019 0">
@@ -250,7 +251,7 @@
   <actuator>
     <!-- <position name="head_pan_act" joint="head_pan"/>
     <position name="head_tilt_act" joint="head_tilt"/> -->
-    <!-- <position name="l_sho_pitch_act_pos" joint="l_sho_pitch"/>
+    <position name="l_sho_pitch_act_pos" joint="l_sho_pitch"/>
     <position name="l_sho_roll_act_pos" joint="l_sho_roll"/>
     <position name="l_el_act_pos" joint="l_el"/>
     <position name="r_sho_pitch_act_pos" joint="r_sho_pitch"/>
@@ -267,9 +268,9 @@
     <position name="r_hip_pitch_act_pos" joint="r_hip_pitch"/>
     <position name="r_knee_act_pos" joint="r_knee"/>
     <position name="r_ank_pitch_act_pos" joint="r_ank_pitch"/>
-    <position name="r_ank_roll_act_pos" joint="r_ank_roll"/> -->
+    <position name="r_ank_roll_act_pos" joint="r_ank_roll"/>
 
-    <motor name="l_sho_pitch_act_motor" joint="l_sho_pitch"/>
+    <!-- <motor name="l_sho_pitch_act_motor" joint="l_sho_pitch"/>
     <motor name="l_sho_roll_act_motor" joint="l_sho_roll"/>
     <motor name="l_el_act_motor" joint="l_el"/>
     <motor name="r_sho_pitch_act_motor" joint="r_sho_pitch"/>
@@ -286,7 +287,7 @@
     <motor name="r_hip_pitch_act_motor" joint="r_hip_pitch"/>
     <motor name="r_knee_act_motor" joint="r_knee"/>
     <motor name="r_ank_pitch_act_motor" joint="r_ank_pitch"/>
-    <motor name="r_ank_roll_act_motor" joint="r_ank_roll"/>
+    <motor name="r_ank_roll_act_motor" joint="r_ank_roll"/> -->
     
   </actuator>
 </mujoco>

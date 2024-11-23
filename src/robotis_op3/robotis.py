@@ -37,11 +37,9 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
         forward_reward_weight: float = 5.00,
         ctrl_cost_weight: float = 0.001,
         ctrl_cost_diff_axis_y: float = 0.1,
-        # contact_cost_weight: float = 5e-7,
-        # contact_cost_range: Tuple[float, float] = (-np.inf, 10.0),
         healthy_reward: float = 2.0,
         terminate_when_unhealthy: bool = True,
-        healthy_z_range: Tuple[float, float] = (0.26, 0.32),
+        healthy_z_range: Tuple[float, float] = (0.265, 0.290),
         reset_noise_scale: float = 1e-2,
         # exclude_current_positions_from_observation: bool = True,
         include_cinert_in_observation: bool = False,
@@ -145,8 +143,8 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
     @property
     def is_healthy(self):
         min_z, max_z = self._healthy_z_range
-        # print(self.data.site('torso').xpos[2])
-        is_healthy = min_z < self.data.site('torso').xpos[2] < max_z
+        # is_healthy = min_z < self.data.site('torso').xpos[2] < max_z
+        is_healthy = min_z < self.data.qpos[2] < max_z
         return is_healthy
 
     @property
@@ -156,16 +154,6 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
     def control_cost(self, action):
         control_cost = self._ctrl_cost_weight * np.sum(np.square(self.data.ctrl))
         return control_cost
-
-    @property
-    def contact_cost(self):
-        # contact_forces = self.data.cfrc_ext
-        # contact_cost = self._contact_cost_weight * np.sum(np.square(contact_forces))
-        # min_cost, max_cost = self._contact_cost_range
-        # contact_cost = np.clip(contact_cost, min_cost, max_cost)
-        # return contact_cost
-        return 0
-
 
     def _get_rew(self, x_velocity: float, x_pos:float, action):
         # penalty_stagnation = (x_pos < 0.01) * 0.1
@@ -186,19 +174,14 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
             "reward_forward": forward_reward,
             "reward_ctrl": -ctrl_cost,
             "reward_diff_y_axis": -diff_y_axis,
-            # "reward_contact": -contact_cost,
         }
 
         return reward, reward_info
 
     # define what should happen when the model is reset (at the beginning of each episode)
     def reset_model(self):
-        # self.step_number = 0
-
         noise_low = -self._reset_noise_scale
         noise_high = self._reset_noise_scale
-        # noise_low = -0.01
-        # noise_high = 0.01
 
         qpos = self.init_qpos + self.np_random.uniform(
             low=noise_low, high=noise_high, size=self.model.nq
@@ -216,11 +199,9 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
         position = self.data.qpos.flatten()
         velocity = self.data.qvel.flatten()
         imu = self.data.sensordata.flatten()
-        com_inertia = self.data.cinert[1:].flatten()
-        com_velocity = self.data.cvel[1:].flatten()
-        actuator_forces = self.data.qfrc_actuator[6:].flatten()
-
-
+        # com_inertia = self.data.cinert[1:].flatten()
+        # com_velocity = self.data.cvel[1:].flatten()
+        # actuator_forces = self.data.qfrc_actuator[6:].flatten()
 
         if self._include_cinert_in_observation is True:
             com_inertia = self.data.cinert[1:].flatten()

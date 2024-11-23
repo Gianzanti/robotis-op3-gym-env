@@ -24,13 +24,15 @@ uv sync
 uv build
 ```
 
-## Install it as a package
+## Installing environment
+
+### As a package
 
 ```bash
-pip install dist/robotis_op3-0.1.1-py3-none-any.whl
+pip install dist/robotis_op3-[version]-py3-none-any.whl
 ```
 
-## Install it in editable mode
+### In editable mode
 
 ```bash
 pip install -e .

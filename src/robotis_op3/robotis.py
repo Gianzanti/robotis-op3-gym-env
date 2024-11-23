@@ -39,7 +39,7 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
         ctrl_cost_diff_axis_y: float = 0.1,
         healthy_reward: float = 2.0,
         terminate_when_unhealthy: bool = True,
-        healthy_z_range: Tuple[float, float] = (0.265, 0.290),
+        healthy_z_range: Tuple[float, float] = (0.260, 0.290),
         reset_noise_scale: float = 1e-2,
         # exclude_current_positions_from_observation: bool = True,
         include_cinert_in_observation: bool = False,
@@ -120,7 +120,7 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
 
         observation = self._get_obs()
         # reward, reward_info = self._get_rew(x_velocity, x_pos_delta, action)
-        reward, reward_info = self._get_rew(x_velocity, self.data.qpos[0], action)
+        reward, reward_info = self._get_rew(x_velocity, self.data.qpos[0], x_pos_delta, action)
         terminated = (not self.is_healthy) # and self._terminate_when_unhealthy
         info = {
             "x_position": self.data.qpos[0],
@@ -155,17 +155,15 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
         control_cost = self._ctrl_cost_weight * np.sum(np.square(self.data.ctrl))
         return control_cost
 
-    def _get_rew(self, x_velocity: float, x_pos:float, action):
-        # penalty_stagnation = (x_pos < 0.01) * 0.1
-        # forward_reward = (self._forward_reward_weight * x_pos) - penalty_stagnation
+    def _get_rew(self, x_velocity: float, x_pos:float, pos_delta:float, action):
         forward_reward = (self._forward_reward_weight * x_pos)
         healthy_reward = self.healthy_reward
-        rewards = forward_reward + healthy_reward
+        rewards = forward_reward + healthy_reward 
 
         ctrl_cost = self.control_cost(action)
         diff_y_axis = abs(self.data.site('torso').xpos[1]) * self._ctrl_cost_diff_axis_y
-        # contact_cost = self.contact_cost
-        costs = ctrl_cost + diff_y_axis
+        penalty_reward = (pos_delta < 0.05) * 0.5
+        costs = ctrl_cost + diff_y_axis + penalty_reward
 
         reward = rewards - costs
 

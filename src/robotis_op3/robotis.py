@@ -37,6 +37,7 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
         forward_reward_weight: float = 5.00,
         ctrl_cost_weight: float = 0.001,
         ctrl_cost_diff_axis_y: float = 0.1,
+        standing_cost: float = 0.1,
         healthy_reward: float = 2.0,
         terminate_when_unhealthy: bool = True,
         healthy_z_range: Tuple[float, float] = (0.260, 0.290),
@@ -57,6 +58,7 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
             ctrl_cost_diff_axis_y,
             # contact_cost_weight,
             # contact_cost_range,
+            standing_cost,
             healthy_reward,
             terminate_when_unhealthy,
             healthy_z_range,
@@ -69,6 +71,7 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
         self._forward_reward_weight: float = forward_reward_weight
         self._ctrl_cost_weight: float = ctrl_cost_weight
         self._ctrl_cost_diff_axis_y: float = ctrl_cost_diff_axis_y
+        self._standing_cost: float = standing_cost
         self._healthy_reward: float = healthy_reward
         self._terminate_when_unhealthy: bool = terminate_when_unhealthy
         self._healthy_z_range: Tuple[float, float] = healthy_z_range
@@ -162,7 +165,7 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
 
         ctrl_cost = self.control_cost(action)
         diff_y_axis = abs(self.data.site('torso').xpos[1]) * self._ctrl_cost_diff_axis_y
-        penalty_reward = (pos_delta < 0.05) * 0.5
+        penalty_reward = (pos_delta < 0.01) * self._standing_cost
         costs = ctrl_cost + diff_y_axis + penalty_reward
 
         reward = rewards - costs

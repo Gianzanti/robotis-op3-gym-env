@@ -40,7 +40,7 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
         standing_cost: float = 0.1,
         healthy_reward: float = 2.0,
         terminate_when_unhealthy: bool = True,
-        healthy_z_range: Tuple[float, float] = (0.260, 0.290),
+        healthy_z_range: Tuple[float, float] = (0.260, 0.31),
         reset_noise_scale: float = 1e-2,
         # exclude_current_positions_from_observation: bool = True,
         include_cinert_in_observation: bool = False,
@@ -119,21 +119,18 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
         xy_velocity = (xy_position_after - xy_position_before) / self.dt
         x_velocity, y_velocity = xy_velocity
 
-        x_pos_delta = xy_position_after[0] - xy_position_before[0]
+        # x_pos_delta = xy_position_after[0] - xy_position_before[0]
 
         observation = self._get_obs()
-        # reward, reward_info = self._get_rew(x_velocity, x_pos_delta, action)
-        reward, reward_info = self._get_rew(x_velocity, self.data.qpos[0], x_pos_delta, action)
-        terminated = (not self.is_healthy) # and self._terminate_when_unhealthy
+        reward, reward_info = self._get_rew(x_velocity)
+        terminated = (not self.is_healthy) or (self.distance_cost() >= 0)
         info = {
             "x_position": self.data.qpos[0],
             "y_position": self.data.qpos[1],
             "distance_from_origin": np.linalg.norm(self.data.qpos[0:2], ord=2),
             "x_velocity": x_velocity,
             "y_velocity": y_velocity,
-            "z_height": self.data.site('torso').xpos[2],
-            # "z_height": self.data.qpos[2],
-            "x_pos_delta": x_pos_delta,
+            "z_height": self.data.qpos[2],
             **reward_info,
         }
 
@@ -146,7 +143,6 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
     @property
     def is_healthy(self):
         min_z, max_z = self._healthy_z_range
-        # is_healthy = min_z < self.data.site('torso').xpos[2] < max_z
         is_healthy = min_z < self.data.qpos[2] < max_z
         return is_healthy
 
@@ -154,27 +150,36 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
     def healthy_reward(self):
         return self.is_healthy * self._healthy_reward      
 
-    def control_cost(self, action):
-        control_cost = self._ctrl_cost_weight * np.sum(np.square(self.data.ctrl))
-        return control_cost
+    def control_cost(self):
+        return -(self._ctrl_cost_weight * np.sum(np.square(self.data.ctrl)))
 
-    def _get_rew(self, x_velocity: float, x_pos:float, pos_delta:float, action):
-        forward_reward = (self._forward_reward_weight * x_pos)
+    def stray_cost(self):
+        return -(np.square(self.data.qpos[1]) * self._ctrl_cost_diff_axis_y)
+
+    def distance_cost(self):
+        target_position = np.array([3.0, 0.0]) # ball target position 
+        distance_to_target = np.linalg.norm(self.data.qpos[0:2] - target_position, ord=2)
+        print(f"Distance to target: {distance_to_target}")
+        return -distance_to_target
+    
+    def forward_reward(self, x_velocity: float):
+        return self._forward_reward_weight * x_velocity
+
+    def _get_rew(self, x_velocity: float):
+        forward_reward = self.forward_reward(x_velocity)
         healthy_reward = self.healthy_reward
-        rewards = forward_reward + healthy_reward 
+        distance_cost = self.distance_cost()
+        ctrl_cost = self.control_cost()
+        stray_cost = self.stray_cost()
 
-        ctrl_cost = self.control_cost(action)
-        diff_y_axis = abs(self.data.site('torso').xpos[1]) * self._ctrl_cost_diff_axis_y
-        penalty_reward = (pos_delta < 0.01) * self._standing_cost
-        costs = ctrl_cost + diff_y_axis + penalty_reward
-
-        reward = rewards - costs
+        reward = forward_reward + healthy_reward + ctrl_cost + stray_cost + distance_cost + 0.0625
 
         reward_info = {
-            "reward_survive": healthy_reward,
-            "reward_forward": forward_reward,
-            "reward_ctrl": -ctrl_cost,
-            "reward_diff_y_axis": -diff_y_axis,
+            "forward_reward": forward_reward,
+            "healthy_reward": healthy_reward,
+            "distance_cost": distance_cost,
+            "ctrl_cost": ctrl_cost,
+            "stray_cost": stray_cost,
         }
 
         return reward, reward_info

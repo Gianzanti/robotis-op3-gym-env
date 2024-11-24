@@ -40,7 +40,7 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
         standing_cost: float = 0.1,
         healthy_reward: float = 2.0,
         terminate_when_unhealthy: bool = True,
-        healthy_z_range: Tuple[float, float] = (0.260, 0.31),
+        healthy_z_range: Tuple[float, float] = (0.260, 0.33),
         reset_noise_scale: float = 1e-2,
         # exclude_current_positions_from_observation: bool = True,
         include_cinert_in_observation: bool = False,

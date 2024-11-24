@@ -34,8 +34,8 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
         self,         
         frame_skip: int = 5,
         default_camera_config: Dict[str, Union[float, int]] = DEFAULT_CAMERA_CONFIG,
-        forward_reward_weight: float = 5.00,
-        ctrl_cost_weight: float = 0.001,
+        forward_reward_weight: float = 2.50,
+        ctrl_cost_weight: float = 0.1,
         ctrl_cost_diff_axis_y: float = 0.1,
         standing_cost: float = 0.1,
         healthy_reward: float = 2.0,
@@ -159,7 +159,6 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
     def distance_cost(self):
         target_position = np.array([3.0, 0.0]) # ball target position 
         distance_to_target = np.linalg.norm(self.data.qpos[0:2] - target_position, ord=2)
-        print(f"Distance to target: {distance_to_target}")
         return -distance_to_target
     
     def forward_reward(self, x_velocity: float):

@@ -34,11 +34,12 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
         self,         
         frame_skip: int = 5,
         default_camera_config: Dict[str, Union[float, int]] = DEFAULT_CAMERA_CONFIG,
-        forward_reward_weight: float = 5.00,
+        forward_reward_weight: float = 4.00,
         ctrl_cost_weight: float = 0.05,
-        ctrl_cost_diff_axis_y: float = 0.1,
-        standing_cost: float = 0.1,
-        healthy_reward: float = 2.0,
+        # ctrl_cost_diff_axis_y: float = 0.1,
+        # standing_cost: float = 0.0,
+        healthy_reward: float = 3.0,
+        target_position: Tuple[float, float] = (3.0, 0.0),
         terminate_when_unhealthy: bool = True,
         healthy_z_range: Tuple[float, float] = (0.260, 0.32),
         reset_noise_scale: float = 1e-2,
@@ -55,11 +56,12 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
             default_camera_config,
             forward_reward_weight,
             ctrl_cost_weight,
-            ctrl_cost_diff_axis_y,
+            # ctrl_cost_diff_axis_y,
             # contact_cost_weight,
             # contact_cost_range,
-            standing_cost,
+            # standing_cost,
             healthy_reward,
+            target_position,
             terminate_when_unhealthy,
             healthy_z_range,
             reset_noise_scale,
@@ -70,10 +72,11 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
         )
         self._forward_reward_weight: float = forward_reward_weight
         self._ctrl_cost_weight: float = ctrl_cost_weight
-        self._ctrl_cost_diff_axis_y: float = ctrl_cost_diff_axis_y
-        self._standing_cost: float = standing_cost
+        # self._ctrl_cost_diff_axis_y: float = ctrl_cost_diff_axis_y
+        # self._standing_cost: float = standing_cost
         self._healthy_reward: float = healthy_reward
         self._terminate_when_unhealthy: bool = terminate_when_unhealthy
+        self._target_position: Tuple[float, float] = target_position
         self._healthy_z_range: Tuple[float, float] = healthy_z_range
         self._reset_noise_scale: float = reset_noise_scale
 
@@ -153,11 +156,11 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
     def control_cost(self):
         return -(self._ctrl_cost_weight * np.sum(np.square(self.data.ctrl)))
 
-    def stray_cost(self):
-        return -(np.square(self.data.qpos[1]) * self._ctrl_cost_diff_axis_y)
+    # def stray_cost(self):
+    #     return -(np.square(self.data.qpos[1]) * self._ctrl_cost_diff_axis_y)
 
     def distance_cost(self):
-        target_position = np.array([3.0, 0.0]) # ball target position 
+        target_position = np.array(self._target_position) # ball target position 
         distance_to_target = np.linalg.norm(self.data.qpos[0:2] - target_position, ord=2)
         return -distance_to_target
     
@@ -169,16 +172,16 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
         healthy_reward = self.healthy_reward
         distance_cost = self.distance_cost()
         ctrl_cost = self.control_cost()
-        stray_cost = self.stray_cost()
+        # stray_cost = self.stray_cost()
 
-        reward = forward_reward + healthy_reward + ctrl_cost + stray_cost + distance_cost + 0.0625
+        reward = forward_reward + healthy_reward + ctrl_cost + distance_cost + 0.0625
 
         reward_info = {
             "forward_reward": forward_reward,
             "healthy_reward": healthy_reward,
             "distance_cost": distance_cost,
             "ctrl_cost": ctrl_cost,
-            "stray_cost": stray_cost,
+            # "stray_cost": stray_cost,
         }
 
         return reward, reward_info

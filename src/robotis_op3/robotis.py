@@ -184,12 +184,12 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
         healthy_reward = self.healthy_reward
         distance_cost = self.distance_cost()
         if distance_cost >= -0.3:
-            distance_cost = 10
+            distance_cost = 1000
         ctrl_cost = self.control_cost()
         zmp = self.calculate_feet_center_of_mass()
         # stray_cost = self.stray_cost()
 
-        reward = forward_reward + healthy_reward + ctrl_cost + distance_cost + 0.0625 - zmp
+        reward = forward_reward + healthy_reward + ctrl_cost + distance_cost - zmp #+ 0.0625
 
         reward_info = {
             "forward_reward": forward_reward,

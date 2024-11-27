@@ -34,7 +34,7 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
         self,         
         frame_skip: int = 5,
         default_camera_config: Dict[str, Union[float, int]] = DEFAULT_CAMERA_CONFIG,
-        forward_reward_weight: float = 4.00,
+        forward_reward_weight: float = 1.50,
         ctrl_cost_weight: float = 0.05,
         # ctrl_cost_diff_axis_y: float = 0.1,
         # standing_cost: float = 0.0,
@@ -126,7 +126,8 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
 
         observation = self._get_obs()
         reward, reward_info = self._get_rew(x_velocity)
-        terminated = (not self.is_healthy) or (self.distance_cost() >= 0)
+        terminated = (not self.is_healthy) or (self.distance_cost() >= -0.3)
+        # zmp = self.calculate_feet_center_of_mass()
         info = {
             "x_position": self.data.qpos[0],
             "y_position": self.data.qpos[1],
@@ -134,6 +135,9 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
             "x_velocity": x_velocity,
             "y_velocity": y_velocity,
             "z_height": self.data.qpos[2],
+            # "right_foot": self.data.site('r_foot').xpos,
+            # "left_foot": self.data.site('l_foot').xpos,
+            # "zmp": zmp,
             **reward_info,
         }
 
@@ -167,20 +171,32 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
     def forward_reward(self, x_velocity: float):
         return self._forward_reward_weight * x_velocity
 
+
+    def calculate_feet_center_of_mass(self):
+        center_x = (self.data.site('r_foot').xpos[0] + self.data.site('l_foot').xpos[0]) / 2
+        center_y = (self.data.site('r_foot').xpos[1] + self.data.site('l_foot').xpos[1]) / 2
+        foot_mass_center = np.array([center_x, center_y])
+        distance2 = np.linalg.norm(foot_mass_center - self.data.site('torso').xpos[0:2], ord=2)
+        return distance2
+
     def _get_rew(self, x_velocity: float):
         forward_reward = self.forward_reward(x_velocity)
         healthy_reward = self.healthy_reward
         distance_cost = self.distance_cost()
+        if distance_cost >= -0.3:
+            distance_cost = 10
         ctrl_cost = self.control_cost()
+        zmp = self.calculate_feet_center_of_mass()
         # stray_cost = self.stray_cost()
 
-        reward = forward_reward + healthy_reward + ctrl_cost + distance_cost + 0.0625
+        reward = forward_reward + healthy_reward + ctrl_cost + distance_cost + 0.0625 - zmp
 
         reward_info = {
             "forward_reward": forward_reward,
             "healthy_reward": healthy_reward,
             "distance_cost": distance_cost,
             "ctrl_cost": ctrl_cost,
+            "zmp": zmp,
             # "stray_cost": stray_cost,
         }
 

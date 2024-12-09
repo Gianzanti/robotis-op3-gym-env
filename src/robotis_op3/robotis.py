@@ -36,12 +36,11 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
         default_camera_config: Dict[str, Union[float, int]] = DEFAULT_CAMERA_CONFIG,
         forward_reward_weight: float = 1.50,
         ctrl_cost_weight: float = 0.05,
-        # ctrl_cost_diff_axis_y: float = 0.1,
-        # standing_cost: float = 0.0,
         healthy_reward: float = 3.0,
         target_position: Tuple[float, float] = (3.0, 0.0),
         terminate_when_unhealthy: bool = True,
         healthy_z_range: Tuple[float, float] = (0.260, 0.32),
+        zmp_weight: float = 0, #0.0625,
         reset_noise_scale: float = 1e-2,
         # exclude_current_positions_from_observation: bool = True,
         include_cinert_in_observation: bool = False,
@@ -56,15 +55,12 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
             default_camera_config,
             forward_reward_weight,
             ctrl_cost_weight,
-            # ctrl_cost_diff_axis_y,
-            # contact_cost_weight,
-            # contact_cost_range,
-            # standing_cost,
             healthy_reward,
             target_position,
             terminate_when_unhealthy,
             healthy_z_range,
             reset_noise_scale,
+            zmp_weight,
             include_cinert_in_observation,
             include_cvel_in_observation,
             include_qfrc_actuator_in_observation,
@@ -72,12 +68,11 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
         )
         self._forward_reward_weight: float = forward_reward_weight
         self._ctrl_cost_weight: float = ctrl_cost_weight
-        # self._ctrl_cost_diff_axis_y: float = ctrl_cost_diff_axis_y
-        # self._standing_cost: float = standing_cost
         self._healthy_reward: float = healthy_reward
         self._terminate_when_unhealthy: bool = terminate_when_unhealthy
         self._target_position: Tuple[float, float] = target_position
         self._healthy_z_range: Tuple[float, float] = healthy_z_range
+        self._zmp_weight: float = zmp_weight
         self._reset_noise_scale: float = reset_noise_scale
 
         self._include_cinert_in_observation = include_cinert_in_observation
@@ -127,7 +122,6 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
         observation = self._get_obs()
         reward, reward_info = self._get_rew(x_velocity)
         terminated = (not self.is_healthy) or (self.distance_cost() >= -0.3)
-        # zmp = self.calculate_feet_center_of_mass()
         info = {
             "x_position": self.data.qpos[0],
             "y_position": self.data.qpos[1],
@@ -135,9 +129,6 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
             "x_velocity": x_velocity,
             "y_velocity": y_velocity,
             "z_height": self.data.qpos[2],
-            # "right_foot": self.data.site('r_foot').xpos,
-            # "left_foot": self.data.site('l_foot').xpos,
-            # "zmp": zmp,
             **reward_info,
         }
 
@@ -160,9 +151,6 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
     def control_cost(self):
         return -(self._ctrl_cost_weight * np.sum(np.square(self.data.ctrl)))
 
-    # def stray_cost(self):
-    #     return -(np.square(self.data.qpos[1]) * self._ctrl_cost_diff_axis_y)
-
     def distance_cost(self):
         target_position = np.array(self._target_position) # ball target position 
         distance_to_target = np.linalg.norm(self.data.qpos[0:2] - target_position, ord=2)
@@ -171,13 +159,14 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
     def forward_reward(self, x_velocity: float):
         return self._forward_reward_weight * x_velocity
 
-
     def calculate_feet_center_of_mass(self):
+        if self._zmp_weight == 0:
+            return 0
         center_x = (self.data.site('r_foot').xpos[0] + self.data.site('l_foot').xpos[0]) / 2
         center_y = (self.data.site('r_foot').xpos[1] + self.data.site('l_foot').xpos[1]) / 2
         foot_mass_center = np.array([center_x, center_y])
         distance2 = np.linalg.norm(foot_mass_center - self.data.site('torso').xpos[0:2], ord=2)
-        return distance2
+        return distance2 * self._zmp_weight
 
     def _get_rew(self, x_velocity: float):
         forward_reward = self.forward_reward(x_velocity)
@@ -187,7 +176,6 @@ class RobotisEnv(MujocoEnv, utils.EzPickle):
             distance_cost = 1000
         ctrl_cost = self.control_cost()
         zmp = self.calculate_feet_center_of_mass()
-        # stray_cost = self.stray_cost()
 
         reward = forward_reward + healthy_reward + ctrl_cost + distance_cost - zmp #+ 0.0625
 

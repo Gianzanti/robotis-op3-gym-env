@@ -120,7 +120,7 @@
           <body name="l_el_link" pos="0 0.0904 -0.0001">
             <inertial pos="-0.019 0.07033 0.0038" quat="0.483289 0.51617 -0.51617 0.483289" mass="0.04127"
               diaginertia="6.8785e-05 6.196e-05 1.2065e-05"/>
-            <joint name="l_el" axis="1 0 0"/>
+            <joint name="l_el" axis="1 0 0" limited="true" range="-1.57 0.00" />
             <geom mesh="la3" class="visual"/>
             <geom mesh="la3c" class="collision"/>
           </body>
@@ -141,7 +141,7 @@
           <body name="r_el_link" pos="0 -0.0904 -0.0001">
             <inertial pos="-0.019 -0.07033 0.0038" quat="0.51617 0.483289 -0.483289 0.51617" mass="0.04127"
               diaginertia="6.8785e-05 6.196e-05 1.2065e-05"/>
-            <joint name="r_el" axis="1 0 0"/>
+            <joint name="r_el" axis="1 0 0" limited="true" range="0.00 1.57" />
             <geom mesh="ra3" class="visual"/>
             <geom mesh="ra3c" class="collision"/>
           </body>
